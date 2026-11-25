@@ -997,44 +997,26 @@
       btn.disabled = true;
       btn.textContent = '신청 처리 중...';
 
-      let makeSuccess = false;
+      // 1. 솔라피(Solapi)로 신청자 휴대폰에 안내 문자 즉시 직접 발송 (메이크 켜짐 여부와 무관하게 100% 즉시 발송!)
       try {
-        // 1. 메이크(Make) 고정 IP 웹훅으로 전송 (이름 뒤에 공백 1칸을 붙여 인스타 7번 광고와 유튜브 7번 광고를 100% 구분)
-        const makeRes = await fetch(MAKE_WEBHOOK_URL, {
+        await sendSolapiSms(name, phone);
+      } catch (err) {
+        console.error('Solapi direct send error:', err);
+      }
+
+      // 2. 텔레그램 '유튜브_차트광고7' 방으로 신청자 이름/연락처 즉시 알림 전송
+      const msgText = `🔔 [신규 유튜브광고 신청 접수]\n\n이름: ${name}\n연락처: ${phone}`;
+      try {
+        await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            full_name: name + ' ',
-            phone_number: phone
+            chat_id: TG_CHAT_ID,
+            text: msgText
           })
         });
-        if (makeRes.ok) {
-          makeSuccess = true;
-        }
       } catch (err) {
-        console.error('Make webhook error:', err);
-      }
-
-      // 2. 만약 메이크 시나리오가 꺼져 있거나 응답 실패 시 백업으로 텔레그램 + 솔라피 직접 발송
-      if (!makeSuccess) {
-        const msgText = `🔔 [신규 유튜브광고 신청 접수]\n\n이름: ${name}\n연락처: ${phone}`;
-        try {
-          await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              chat_id: TG_CHAT_ID,
-              text: msgText
-            })
-          });
-        } catch (err) {
-          console.error(err);
-        }
-        try {
-          await sendSolapiSms(name, phone);
-        } catch (err) {
-          console.error(err);
-        }
+        console.error('Telegram direct send error:', err);
       }
 
       btn.disabled = false;
