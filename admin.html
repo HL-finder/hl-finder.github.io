@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 고점저점탐지기 | 잠재고객 DB 센터 & 솔라피 발송현황</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 28px 18px 60px;
+      line-height: 1.5;
+    }
+    .wrap {
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+    .header-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      background: #0f172a;
+      color: #ffffff;
+      padding: 22px 26px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.15);
+    }
+    .header-title {
+      font-size: 1.45rem;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header-sub {
+      font-size: 0.88rem;
+      color: #94a3b8;
+      margin-top: 4px;
+      font-weight: 600;
+    }
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      font-weight: 800;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+    .btn-blue { background: #2563eb; color: #fff; }
+    .btn-blue:hover { background: #1d4ed8; }
+    .btn-green { background: #10b981; color: #fff; }
+    .btn-green:hover { background: #059669; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 18px 20px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    .stat-label { font-size: 0.86rem; font-weight: 700; color: #64748b; margin-bottom: 6px; }
+    .stat-val { font-size: 1.75rem; font-weight: 900; color: #0f172a; }
+
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      padding: 22px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+    }
+    .card-title {
+      font-size: 1.12rem;
+      font-weight: 900;
+      margin-bottom: 14px;
+      color: #0f172a;
+    }
+    .manual-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    .input {
+      padding: 11px 14px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 0.94rem;
+      font-family: inherit;
+      font-weight: 600;
+      outline: none;
+    }
+    .input:focus { border-color: #2563eb; }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+    th, td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+      white-space: nowrap;
+    }
+    th {
+      background: #f8fafc;
+      font-weight: 800;
+      color: #475569;
+    }
+    tr:hover td { background: #f8fafc; }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+    .badge-ok { background: #dcfce7; color: #15803d; }
+    .badge-wait { background: #fef9c3; color: #a16207; }
+    .badge-src7 { background: #dbeafe; color: #1d4ed8; }
+    .badge-src6 { background: #f3e8ff; color: #7e22ce; }
+    .resend-btn {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .resend-btn:hover { background: #e2e8f0; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header-bar">
+      <div>
+        <div class="header-title">📊 AI 고점저점탐지기 잠재고객 DB 센터 (솔라피 실시간 연동)</div>
+        <div class="header-sub">유튜브 홈페이지(hl-finder.github.io) 및 페이스북 잠재고객 광고에서 접수·발송된 전체 DB 통합 관리 페이지</div>
+      </div>
+      <div class="btn-row">
+        <button type="button" class="btn btn-blue" onclick="loadLeads()">🔄 실시간 DB 새로고침</button>
+        <button type="button" class="btn btn-green" onclick="downloadCsv()">📥 전체 DB 엑셀(CSV) 다운로드</button>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">총 수집된 잠재고객 DB</div>
+        <div class="stat-val" id="statTotal">- 건</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">7번 광고 (유튜브/인스타) DB</div>
+        <div class="stat-val" id="statAd7" style="color: #2563eb;">- 건</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">6번 광고 (무릎·어깨) DB</div>
+        <div class="stat-val" id="statAd6" style="color: #7e22ce;">- 건</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">솔라피 발신번호</div>
+        <div class="stat-val" style="font-size: 1.35rem; color: #10b981;">010-9834-0272</div>
+      </div>
+    </div>
+
+    <!-- 수동 DB 입력 및 즉시 솔라피 발송 -->
+    <div class="card">
+      <div class="card-title">📩 수동 고객 등록 &amp; 솔라피 안내문자 즉시 발송 (7번 광고 템플릿)</div>
+      <form class="manual-form" onsubmit="manualSend(event)">
+        <input type="text" id="mName" class="input" placeholder="고객 이름 (예: 홍길동)" required />
+        <input type="tel" id="mPhone" class="input" placeholder="전화번호 (예: 010-1234-5678)" required />
+        <button type="submit" id="mBtn" class="btn btn-blue">🚀 DB 추가 + 솔라피 문자 + 텔레그램 발송</button>
+      </form>
+    </div>
+
+    <!-- 전체 잠재고객 DB 리스트 -->
+    <div class="card">
+      <div class="card-title">📋 실시간 잠재고객 신청자 DB 목록</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>번호</th>
+              <th>접수 / 발송일시</th>
+              <th>이름</th>
+              <th>연락처 (전화번호)</th>
+              <th>광고 구분</th>
+              <th>솔라피 상태</th>
+              <th>문자 재발송</th>
+            </tr>
+          </thead>
+          <tbody id="leadTableBody">
+            <tr><td colspan="7" style="text-align:center; padding: 30px;">데이터를 불러오는 중입니다...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SOLAPI_KEY = 'NCS8HV59AHISJ29046RDBT';
+    const SOLAPI_SECRET = 'QRBQCC7GQGIEYZEKTSNXSF2LOX6ALKKW';
+    const SOLAPI_FROM = '01098340272';
+    const TG_BOT_TOKEN = '8761685098:AAHAz7A9qyIarhjmYW1Du4185cy64Ix0xPc';
+    const TG_CHAT_ID = '-5390075859';
+
+    let currentLeads = [];
+
+    async function makeSolapiAuthHeader() {
+      const dateStr = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+      const arr = new Uint8Array(16);
+      crypto.getRandomValues(arr);
+      const salt = Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+      const enc = new TextEncoder();
+      const key = await crypto.subtle.importKey(
+        'raw',
+        enc.encode(SOLAPI_SECRET),
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign']
+      );
+      const sigBuf = await crypto.subtle.sign('HMAC', key, enc.encode(dateStr + salt));
+      const signature = Array.from(new Uint8Array(sigBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+      return `HMAC-SHA256 apiKey=${SOLAPI_KEY}, date=${dateStr}, salt=${salt}, signature=${signature}`;
+    }
+
+    function formatPhoneDisplay(num) {
+      const s = String(num || '').replace(/[^0-9]/g, '');
+      if (s.length === 11) return s.slice(0,3) + '-' + s.slice(3,7) + '-' + s.slice(7);
+      return num || '-';
+    }
+
+    function extractNameFromText(txt) {
+      if (!txt) return '회원';
+      const m = txt.match(/^(.+?)님,\s*방금 신청하신/);
+      return m ? m[1].trim() : '회원';
+    }
+
+    function detectSource(txt) {
+      if (!txt) return '기타';
+      if (txt.includes('지금 살까? 조금 더 기다릴까?')) return '7번 광고 (유튜브/인스타)';
+      if (txt.includes('진짜 무릎·어깨')) return '6번 광고 (무릎·어깨)';
+      return '일반 안내문자';
+    }
+
+    async function loadLeads() {
+      const tbody = document.getElementById('leadTableBody');
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 30px;">솔라피 클라우드 DB에서 최신 신청자 목록을 불러오는 중...</td></tr>';
+      try {
+        const auth = await makeSolapiAuthHeader();
+        const res = await fetch('https://api.solapi.com/messages/v4/list?limit=100', {
+          headers: { 'Authorization': auth }
+        });
+        const data = await res.json();
+        const list = Object.values(data.messageList || {});
+        list.sort((a, b) => new Date(b.dateCreated) - new Date(a.dateCreated));
+
+        currentLeads = list.map((item, idx) => {
+          const name = extractNameFromText(item.text);
+          const phone = formatPhoneDisplay(item.to);
+          const src = detectSource(item.text);
+          const dt = new Date(item.dateCreated).toLocaleString('ko-KR');
+          const status = item.statusCode === '4000' ? '발송완료' : (item.reason || '전송중/처리됨');
+          return {
+            no: list.length - idx,
+            dt,
+            name,
+            phone,
+            rawPhone: item.to,
+            src,
+            status,
+            isOk: item.statusCode === '4000'
+          };
+        });
+
+        document.getElementById('statTotal').textContent = currentLeads.length + ' 건';
+        document.getElementById('statAd7').textContent = currentLeads.filter(x => x.src.includes('7번')).length + ' 건';
+        document.getElementById('statAd6').textContent = currentLeads.filter(x => x.src.includes('6번')).length + ' 건';
+
+        if (currentLeads.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 30px;">아직 접수된 내역이 없습니다.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = currentLeads.map(row => `
+          <tr>
+            <td><strong>${row.no}</strong></td>
+            <td>${row.dt}</td>
+            <td><strong>${row.name}</strong></td>
+            <td><strong>${row.phone}</strong></td>
+            <td><span class="badge ${row.src.includes('7번') ? 'badge-src7' : 'badge-src6'}">${row.src}</span></td>
+            <td><span class="badge ${row.isOk ? 'badge-ok' : 'badge-wait'}">${row.status}</span></td>
+            <td><button type="button" class="resend-btn" onclick="resendSms('${row.name}', '${row.rawPhone}')">📩 문자 재발송</button></td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#ef4444; padding: 30px;">데이터 로드 중 오류가 발생했습니다. 새로고침을 눌러주세요.</td></tr>';
+      }
+    }
+
+    async function sendSolapi7(name, phone) {
+      const cleanTo = phone.replace(/[^0-9]/g, '').replace(/^820?/, '0');
+      const smsText = `${name || '회원'}님, 방금 신청하신 [지금 살까? 조금 더 기다릴까?] AI차트 무료 세팅 링크 보내드립니다.\n\n첫 반등에 서둘러 물리지 않고 고점·저점 타점 정확히 찾아주는 AI차트 세팅법, 아래 스터디방에 들어오셔서 공지사항 바로 확인해주세요.\n\nhttps://t.me/+b0UUdl5YgJ84NDNl`;
+      const auth = await makeSolapiAuthHeader();
+      const res = await fetch('https://api.solapi.com/messages/v4/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': auth },
+        body: JSON.stringify({
+          message: { to: cleanTo, from: SOLAPI_FROM, text: smsText }
+        })
+      });
+      return res.ok;
+    }
+
+    async function resendSms(name, phone) {
+      if (!confirm(`${name} (${phone}) 님께 7번 광고 안내문자를 다시 발송할까요?`)) return;
+      await sendSolapi7(name, phone);
+      alert('솔라피 문자 발송 요청이 완료되었습니다!');
+      setTimeout(loadLeads, 1200);
+    }
+
+    async function manualSend(e) {
+      e.preventDefault();
+      const name = document.getElementById('mName').value.trim();
+      const phone = document.getElementById('mPhone').value.trim();
+      if (!name || !phone) return;
+      const btn = document.getElementById('mBtn');
+      btn.disabled = true;
+      btn.textContent = '발송 처리 중...';
+      try {
+        await sendSolapi7(name, phone);
+        await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: TG_CHAT_ID,
+            text: `🔔 [신규 유튜브광고 신청 접수]\n\n이름: ${name}\n연락처: ${phone}`
+          })
+        });
+        document.getElementById('mName').value = '';
+        document.getElementById('mPhone').value = '';
+        alert('솔라피 문자 발송 및 텔레그램 알림 전송이 완료되었습니다!');
+        setTimeout(loadLeads, 1200);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🚀 DB 추가 + 솔라피 문자 + 텔레그램 발송';
+      }
+    }
+
+    function downloadCsv() {
+      if (!currentLeads.length) {
+        alert('다운로드할 DB가 없습니다.');
+        return;
+      }
+      const header = ['번호', '접수일시', '이름', '전화번호', '광고구분', '발송상태'];
+      const rows = currentLeads.map(r => [r.no, r.dt, r.name, r.phone, r.src, r.status]);
+      const csvContent = '\uFEFF' + [header, ...rows].map(e => e.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `AI고점저점탐지기_신청자DB_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+    }
+
+    loadLeads();
+  </script>
+</body>
+</html>
