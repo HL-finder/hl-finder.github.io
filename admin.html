@@ -143,8 +143,40 @@
     }
     .badge-ok { background: #dcfce7; color: #15803d; }
     .badge-wait { background: #fef9c3; color: #a16207; }
-    .badge-src7 { background: #dbeafe; color: #1d4ed8; }
-    .badge-src6 { background: #f3e8ff; color: #7e22ce; }
+    .badge-yt7 { background: #fee2e2; color: #dc2626; }
+    .badge-ig7 { background: #dbeafe; color: #1d4ed8; }
+    .badge-ig6 { background: #f3e8ff; color: #7e22ce; }
+    .badge-old { background: #f1f5f9; color: #475569; }
+    .filter-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      padding: 9px 16px;
+      border-radius: 10px;
+      border: 1.5px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      font-size: 0.9rem;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .tab-btn.active {
+      background: #0f172a;
+      color: #ffffff;
+      border-color: #0f172a;
+    }
+    .stat-card {
+      cursor: pointer;
+      transition: transform 0.12s ease, border-color 0.12s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      border-color: #94a3b8;
+    }
     .resend-btn {
       background: #f1f5f9;
       border: 1px solid #cbd5e1;
@@ -166,34 +198,33 @@
         <div class="header-sub">유튜브 홈페이지(hl-finder.github.io) 및 페이스북 잠재고객 광고에서 접수·발송된 전체 DB 통합 관리 페이지</div>
       </div>
       <div class="btn-row">
-        <button type="button" id="toggleFilterBtn" class="btn" style="background:#334155; color:#fff;" onclick="toggleViewMode()">📋 기존 인스타 내역까지 전체보기</button>
         <button type="button" class="btn btn-blue" onclick="loadLeads()">🔄 실시간 DB 새로고침</button>
         <button type="button" class="btn btn-green" onclick="downloadCsv()">📥 현재 목록 엑셀(CSV) 다운로드</button>
       </div>
     </div>
 
     <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">총 수집된 잠재고객 DB</div>
+      <div class="stat-card" onclick="setFilter('yt7')">
+        <div class="stat-label">▶️ 유튜브 7번 광고 (홈페이지) DB</div>
+        <div class="stat-val" id="statYt7" style="color: #dc2626;">- 건</div>
+      </div>
+      <div class="stat-card" onclick="setFilter('ig7')">
+        <div class="stat-label">📸 인스타 7번 광고 (잠재고객) DB</div>
+        <div class="stat-val" id="statIg7" style="color: #2563eb;">- 건</div>
+      </div>
+      <div class="stat-card" onclick="setFilter('ig6')">
+        <div class="stat-label">📸 인스타 6번 광고 (무릎·어깨) DB</div>
+        <div class="stat-val" id="statIg6" style="color: #7e22ce;">- 건</div>
+      </div>
+      <div class="stat-card" onclick="setFilter('all7')">
+        <div class="stat-label">현재 보기 기준 DB 건수</div>
         <div class="stat-val" id="statTotal">- 건</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">7번 광고 (유튜브/인스타) DB</div>
-        <div class="stat-val" id="statAd7" style="color: #2563eb;">- 건</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">6번 광고 (무릎·어깨) DB</div>
-        <div class="stat-val" id="statAd6" style="color: #7e22ce;">- 건</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">솔라피 발신번호</div>
-        <div class="stat-val" style="font-size: 1.35rem; color: #10b981;">010-9834-0272</div>
       </div>
     </div>
 
     <!-- 수동 DB 입력 및 즉시 솔라피 발송 -->
     <div class="card">
-      <div class="card-title">📩 수동 고객 등록 &amp; 솔라피 안내문자 즉시 발송 (7번 광고 템플릿)</div>
+      <div class="card-title">📩 수동 고객 등록 &amp; 솔라피 안내문자 즉시 발송 (유튜브 7번 광고 기준)</div>
       <form class="manual-form" onsubmit="manualSend(event)">
         <input type="text" id="mName" class="input" placeholder="고객 이름 (예: 홍길동)" required />
         <input type="tel" id="mPhone" class="input" placeholder="전화번호 (예: 010-1234-5678)" required />
@@ -203,7 +234,14 @@
 
     <!-- 전체 잠재고객 DB 리스트 -->
     <div class="card">
-      <div class="card-title">📋 실시간 잠재고객 신청자 DB 목록</div>
+      <div class="card-title">📋 광고 매체별 잠재고객 신청자 DB 목록 (유튜브 vs 인스타 분리)</div>
+      <div class="filter-tabs">
+        <button type="button" class="tab-btn active" id="tab-yt7" onclick="setFilter('yt7')">▶️ 유튜브 7번 광고만 보기</button>
+        <button type="button" class="tab-btn" id="tab-ig7" onclick="setFilter('ig7')">📸 인스타 7번 광고만 보기</button>
+        <button type="button" class="tab-btn" id="tab-all7" onclick="setFilter('all7')">⚖️ 7번 광고 비교 (유튜브+인스타)</button>
+        <button type="button" class="tab-btn" id="tab-ig6" onclick="setFilter('ig6')">📸 인스타 6번 광고만 보기</button>
+        <button type="button" class="tab-btn" id="tab-all" onclick="setFilter('all')">📋 이전 인스타 내역까지 전체보기</button>
+      </div>
       <div class="table-wrap">
         <table>
           <thead>
@@ -212,7 +250,7 @@
               <th>접수 / 발송일시</th>
               <th>이름</th>
               <th>연락처 (전화번호)</th>
-              <th>광고 구분</th>
+              <th>유입 광고 매체 구분</th>
               <th>솔라피 상태</th>
               <th>문자 재발송</th>
             </tr>
@@ -235,18 +273,14 @@
 
     let allLeads = [];
     let currentLeads = [];
-    let onlyYoutube = true; // 기본값: 이번 신규 유튜브 홈페이지(7번/6번) 신청자만 깨끗하게 표시!
+    let currentFilter = 'yt7'; // 기본값: 유튜브 7번 광고만 먼저 깔끔하게 표시!
 
-    function toggleViewMode() {
-      onlyYoutube = !onlyYoutube;
-      const btn = document.getElementById('toggleFilterBtn');
-      if (onlyYoutube) {
-        btn.textContent = '📋 기존 인스타 내역까지 전체보기';
-        btn.style.background = '#334155';
-      } else {
-        btn.textContent = '🎯 신규 유튜브/홈페이지 신청자만 보기';
-        btn.style.background = '#e11d48';
-      }
+    function setFilter(mode) {
+      currentFilter = mode;
+      ['yt7', 'ig7', 'all7', 'ig6', 'all'].forEach(id => {
+        const el = document.getElementById('tab-' + id);
+        if (el) el.classList.toggle('active', id === mode);
+      });
       renderTable();
     }
 
@@ -281,29 +315,45 @@
     }
 
     function detectSource(txt) {
-      if (!txt) return '기존 인스타 광고';
-      if (txt.includes('지금 살까? 조금 더 기다릴까?')) return '7번 광고 (유튜브/홈페이지)';
-      if (txt.includes('진짜 무릎·어깨')) return '6번 광고 (무릎·어깨)';
-      return '기존 인스타 광고';
+      if (!txt) return { label: '이전 인스타 광고', cat: 'old', badge: 'badge-old' };
+      if (txt.includes('지금 살까? 조금 더 기다릴까?')) {
+        // 유튜브 홈페이지 신청분은 이름 뒤에 공백 1칸(' 님, 방금 신청하신')이 들어가서 인스타 7번 광고와 100% 분리됨!
+        if (/\s님,\s*방금 신청하신/.test(txt)) {
+          return { label: '▶️ 유튜브 7번 광고 (홈페이지)', cat: 'yt7', badge: 'badge-yt7' };
+        }
+        return { label: '📸 인스타 7번 광고 (잠재고객)', cat: 'ig7', badge: 'badge-ig7' };
+      }
+      if (txt.includes('진짜 무릎·어깨')) {
+        return { label: '📸 인스타 6번 광고 (무릎·어깨)', cat: 'ig6', badge: 'badge-ig6' };
+      }
+      return { label: '이전 인스타 광고', cat: 'old', badge: 'badge-old' };
     }
 
     function renderTable() {
       const tbody = document.getElementById('leadTableBody');
-      const filtered = onlyYoutube
-        ? allLeads.filter(x => x.src.includes('7번') || x.src.includes('6번'))
-        : allLeads;
+      let filtered = allLeads;
+      if (currentFilter === 'yt7') filtered = allLeads.filter(x => x.cat === 'yt7');
+      else if (currentFilter === 'ig7') filtered = allLeads.filter(x => x.cat === 'ig7');
+      else if (currentFilter === 'all7') filtered = allLeads.filter(x => x.cat === 'yt7' || x.cat === 'ig7');
+      else if (currentFilter === 'ig6') filtered = allLeads.filter(x => x.cat === 'ig6');
 
       currentLeads = filtered.map((item, idx) => ({
         ...item,
         no: filtered.length - idx
       }));
 
+      document.getElementById('statYt7').textContent = allLeads.filter(x => x.cat === 'yt7').length + ' 건';
+      document.getElementById('statIg7').textContent = allLeads.filter(x => x.cat === 'ig7').length + ' 건';
+      document.getElementById('statIg6').textContent = allLeads.filter(x => x.cat === 'ig6').length + ' 건';
       document.getElementById('statTotal').textContent = currentLeads.length + ' 건';
-      document.getElementById('statAd7').textContent = allLeads.filter(x => x.src.includes('7번')).length + ' 건';
-      document.getElementById('statAd6').textContent = allLeads.filter(x => x.src.includes('6번')).length + ' 건';
 
       if (currentLeads.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 36px; font-weight:700; color:#64748b;">현재 신규 유튜브 홈페이지(7번/6번 광고)로 들어온 신청자가 아직 없습니다.<br /><span style="font-size:0.84rem; font-weight:500;">(홈페이지에서 신청이 들어오는 즉시 이곳에 1번부터 차곡차곡 쌓입니다!)</span></td></tr>';
+        const emptyMsg = currentFilter === 'yt7'
+          ? '현재 [▶️ 유튜브 7번 광고 (홈페이지)]로 들어온 신청자가 아직 0건입니다.'
+          : currentFilter === 'ig7'
+          ? '현재 [📸 인스타 7번 광고 (잠재고객)]로 들어온 신청자가 아직 0건입니다.'
+          : '해당 광고 분류로 들어온 신청자가 아직 없습니다.';
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 36px; font-weight:700; color:#64748b;">${emptyMsg}<br /><span style="font-size:0.84rem; font-weight:500;">(신청이 접수되는 즉시 유튜브 7번 / 인스타 7번이 자동으로 각각 나뉘어 1번부터 기록됩니다!)</span></td></tr>`;
         return;
       }
 
@@ -313,7 +363,7 @@
           <td>${row.dt}</td>
           <td><strong>${row.name}</strong></td>
           <td><strong>${row.phone}</strong></td>
-          <td><span class="badge ${row.src.includes('7번') ? 'badge-src7' : 'badge-src6'}">${row.src}</span></td>
+          <td><span class="badge ${row.badge}">${row.src}</span></td>
           <td><span class="badge ${row.isOk ? 'badge-ok' : 'badge-wait'}">${row.status}</span></td>
           <td><button type="button" class="resend-btn" onclick="resendSms('${row.name}', '${row.rawPhone}')">📩 문자 재발송</button></td>
         </tr>
@@ -335,7 +385,7 @@
         allLeads = list.map((item, idx) => {
           const name = extractNameFromText(item.text);
           const phone = formatPhoneDisplay(item.to);
-          const src = detectSource(item.text);
+          const srcObj = detectSource(item.text);
           const dt = new Date(item.dateCreated).toLocaleString('ko-KR');
           const status = item.statusCode === '4000' ? '발송완료' : (item.reason || '전송중/처리됨');
           return {
@@ -344,7 +394,9 @@
             name,
             phone,
             rawPhone: item.to,
-            src,
+            src: srcObj.label,
+            cat: srcObj.cat,
+            badge: srcObj.badge,
             status,
             isOk: item.statusCode === '4000'
           };
@@ -363,7 +415,7 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            full_name: name,
+            full_name: name + ' ',
             phone_number: phone
           })
         });
@@ -372,7 +424,7 @@
         console.error('Make webhook error:', err);
       }
       const cleanTo = phone.replace(/[^0-9]/g, '').replace(/^820?/, '0');
-      const smsText = `${name || '회원'}님, 방금 신청하신 [지금 살까? 조금 더 기다릴까?] AI차트 무료 세팅 링크 보내드립니다.\n\n첫 반등에 서둘러 물리지 않고 고점·저점 타점 정확히 찾아주는 AI차트 세팅법, 아래 스터디방에 들어오셔서 공지사항 바로 확인해주세요.\n\nhttps://t.me/+b0UUdl5YgJ84NDNl`;
+      const smsText = `${name || '회원'} 님, 방금 신청하신 [지금 살까? 조금 더 기다릴까?] AI차트 무료 세팅 링크 보내드립니다.\n\n첫 반등에 서둘러 물리지 않고 고점·저점 타점 정확히 찾아주는 AI차트 세팅법, 아래 스터디방에 들어오셔서 공지사항 바로 확인해주세요.\n\nhttps://t.me/+b0UUdl5YgJ84NDNl`;
       const auth = await makeSolapiAuthHeader();
       const res = await fetch('https://api.solapi.com/messages/v4/send', {
         method: 'POST',
