@@ -940,6 +940,7 @@
       }
     }
 
+    const MAKE_WEBHOOK_URL = 'https://hook.eu2.make.com/d0r66c3tqx4kkh3b71t79ej9rwp7woup';
     const TG_BOT_TOKEN = '8761685098:AAHAz7A9qyIarhjmYW1Du4185cy64Ix0xPc';
     const TG_CHAT_ID = '-5390075859'; // 유튜브_차트광고7
     const SOLAPI_KEY = 'NCS8HV59AHISJ29046RDBT';
@@ -996,32 +997,48 @@
       btn.disabled = true;
       btn.textContent = '신청 처리 중...';
 
-      let smsOk = false;
+      let makeSuccess = false;
       try {
-        // 1. 신청자 핸드폰 번호로 솔라피 안내 문자 즉시 자동 발송 (클라우드 DB 자동 기록)
-        smsOk = await sendSolapiSms(name, phone);
-      } catch (err) {
-        console.error('Solapi error:', err);
-      }
-
-      const msgText = `🔔 [신규 유튜브광고 신청 접수]\n\n이름: ${name}\n연락처: ${phone}`;
-
-      try {
-        // 2. 텔레그램 '유튜브_차트광고7' 방으로 즉시 DB 전송
-        await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
+        // 1. 메이크(Make) 고정 IP 웹훅으로 전송 -> 텔레그램(유튜브_차트광고7) + 솔라피 문자 100% 동시 발송
+        const makeRes = await fetch(MAKE_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            chat_id: TG_CHAT_ID,
-            text: msgText
+            full_name: name,
+            phone_number: phone
           })
         });
+        if (makeRes.ok) {
+          makeSuccess = true;
+        }
       } catch (err) {
-        console.error(err);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = origText;
+        console.error('Make webhook error:', err);
       }
+
+      // 2. 만약 메이크 시나리오가 꺼져 있거나 응답 실패 시 백업으로 텔레그램 + 솔라피 직접 발송
+      if (!makeSuccess) {
+        const msgText = `🔔 [신규 유튜브광고 신청 접수]\n\n이름: ${name}\n연락처: ${phone}`;
+        try {
+          await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: TG_CHAT_ID,
+              text: msgText
+            })
+          });
+        } catch (err) {
+          console.error(err);
+        }
+        try {
+          await sendSolapiSms(name, phone);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      btn.disabled = false;
+      btn.textContent = origText;
 
       document.getElementById('leadForm').style.display = 'none';
       document.getElementById('leadSuccessBox').style.display = 'block';
