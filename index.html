@@ -596,15 +596,49 @@
     @media (max-width: 620px) {
       .definition-patent { grid-template-columns: 1fr; }
     }
-    @media (max-width: 560px) {
-      body { padding-bottom: 165px; }
-      .page-title { font-size: 1.75rem; }
-      .hero-h2 { font-size: 1.38rem; }
-      .sticky-cta-bar { width: calc(100vw - 20px); right: 10px; bottom: 14px; padding: 18px 15px 15px; }
-      .sticky-floating-tag { font-size: 0.84rem; padding: 5px 13px; top: -15px; left: 16px; }
-      .sticky-top-badge { font-size: 0.90rem; padding: 6px 10px; }
-      .sticky-main-setup-btn { font-size: 1.05rem; padding: 14px 14px; gap: 8px; }
-      .click-pill { font-size: 0.88rem; padding: 5px 11px; }
+    @media (max-width: 600px) {
+      body { padding-bottom: 145px; }
+      .page-title { font-size: 1.72rem; }
+      .hero-h2 { font-size: 1.35rem; }
+      .sticky-cta-bar {
+        width: calc(100vw - 20px);
+        max-width: 390px;
+        right: 10px;
+        left: 10px;
+        margin: 0 auto;
+        bottom: 12px;
+        padding: 15px 12px 12px;
+        border-radius: 18px;
+        border-width: 3px;
+      }
+      .sticky-floating-tag {
+        font-size: 0.75rem;
+        padding: 3px 11px;
+        top: -13px;
+        left: 14px;
+      }
+      .live-dot { width: 8px; height: 8px; }
+      .sticky-inner { gap: 7px; margin-top: 2px; }
+      .sticky-top-badge {
+        font-size: 0.78rem;
+        padding: 5px 8px;
+        border-radius: 8px;
+      }
+      .sticky-main-setup-btn {
+        font-size: 0.86rem;
+        padding: 11px 11px;
+        gap: 6px;
+        border-radius: 12px;
+        letter-spacing: -0.03em;
+      }
+      .click-pill {
+        font-size: 0.75rem;
+        padding: 4px 9px;
+      }
+    }
+    @media (max-width: 375px) {
+      .sticky-main-setup-btn { font-size: 0.80rem; padding: 10px 9px; }
+      .click-pill { font-size: 0.70rem; padding: 3px 7px; }
     }
   </style>
 </head>
