@@ -940,13 +940,52 @@
       }
     }
 
+    const TG_BOT_TOKEN = '8761685098:AAHAz7A9qyIarhjmYW1Du4185cy64Ix0xPc';
+    const TG_CHAT_ID = '-5390075859'; // 유튜브_차트광고7
+    const MAKE_WEBHOOK_URL = ''; // 메이크(Make) 솔라피 연동 웹훅 주소 (선택)
+
     async function submitLeadForm(e) {
       e.preventDefault();
       const name = document.getElementById('leadName').value.trim();
       const phone = document.getElementById('leadPhone').value.trim();
       if (!name || !phone) return;
 
-      console.log('무료 셋팅 신청 접수:', { name, phone });
+      const btn = document.getElementById('leadSubmitBtn');
+      const origText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '신청 처리 중...';
+
+      const msgText = `🔔 [신규 유튜브광고 신청 접수]\n\n이름: ${name}\n연락처: ${phone}`;
+
+      try {
+        // 1. 텔레그램 '유튜브_차트광고7' 방으로 즉시 DB 전송
+        await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: TG_CHAT_ID,
+            text: msgText
+          })
+        });
+
+        // 2. 메이크(Make -> 솔라피 자동문자) 웹훅이 설정된 경우 동시 전송
+        if (MAKE_WEBHOOK_URL) {
+          fetch(MAKE_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              source: '유튜브_차트광고7',
+              full_name: name,
+              phone_number: phone
+            })
+          }).catch(() => {});
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = origText;
+      }
 
       document.getElementById('leadForm').style.display = 'none';
       document.getElementById('leadSuccessBox').style.display = 'block';
