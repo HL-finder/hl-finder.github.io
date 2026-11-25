@@ -166,8 +166,9 @@
         <div class="header-sub">유튜브 홈페이지(hl-finder.github.io) 및 페이스북 잠재고객 광고에서 접수·발송된 전체 DB 통합 관리 페이지</div>
       </div>
       <div class="btn-row">
+        <button type="button" id="toggleFilterBtn" class="btn" style="background:#334155; color:#fff;" onclick="toggleViewMode()">📋 기존 인스타 내역까지 전체보기</button>
         <button type="button" class="btn btn-blue" onclick="loadLeads()">🔄 실시간 DB 새로고침</button>
-        <button type="button" class="btn btn-green" onclick="downloadCsv()">📥 전체 DB 엑셀(CSV) 다운로드</button>
+        <button type="button" class="btn btn-green" onclick="downloadCsv()">📥 현재 목록 엑셀(CSV) 다운로드</button>
       </div>
     </div>
 
@@ -231,7 +232,22 @@
     const TG_BOT_TOKEN = '8761685098:AAHAz7A9qyIarhjmYW1Du4185cy64Ix0xPc';
     const TG_CHAT_ID = '-5390075859';
 
+    let allLeads = [];
     let currentLeads = [];
+    let onlyYoutube = true; // 기본값: 이번 신규 유튜브 홈페이지(7번/6번) 신청자만 깨끗하게 표시!
+
+    function toggleViewMode() {
+      onlyYoutube = !onlyYoutube;
+      const btn = document.getElementById('toggleFilterBtn');
+      if (onlyYoutube) {
+        btn.textContent = '📋 기존 인스타 내역까지 전체보기';
+        btn.style.background = '#334155';
+      } else {
+        btn.textContent = '🎯 신규 유튜브/홈페이지 신청자만 보기';
+        btn.style.background = '#e11d48';
+      }
+      renderTable();
+    }
 
     async function makeSolapiAuthHeader() {
       const dateStr = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
@@ -264,10 +280,43 @@
     }
 
     function detectSource(txt) {
-      if (!txt) return '기타';
-      if (txt.includes('지금 살까? 조금 더 기다릴까?')) return '7번 광고 (유튜브/인스타)';
+      if (!txt) return '기존 인스타 광고';
+      if (txt.includes('지금 살까? 조금 더 기다릴까?')) return '7번 광고 (유튜브/홈페이지)';
       if (txt.includes('진짜 무릎·어깨')) return '6번 광고 (무릎·어깨)';
-      return '일반 안내문자';
+      return '기존 인스타 광고';
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('leadTableBody');
+      const filtered = onlyYoutube
+        ? allLeads.filter(x => x.src.includes('7번') || x.src.includes('6번'))
+        : allLeads;
+
+      currentLeads = filtered.map((item, idx) => ({
+        ...item,
+        no: filtered.length - idx
+      }));
+
+      document.getElementById('statTotal').textContent = currentLeads.length + ' 건';
+      document.getElementById('statAd7').textContent = allLeads.filter(x => x.src.includes('7번')).length + ' 건';
+      document.getElementById('statAd6').textContent = allLeads.filter(x => x.src.includes('6번')).length + ' 건';
+
+      if (currentLeads.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 36px; font-weight:700; color:#64748b;">현재 신규 유튜브 홈페이지(7번/6번 광고)로 들어온 신청자가 아직 없습니다.<br /><span style="font-size:0.84rem; font-weight:500;">(홈페이지에서 신청이 들어오는 즉시 이곳에 1번부터 차곡차곡 쌓입니다!)</span></td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = currentLeads.map(row => `
+        <tr>
+          <td><strong>${row.no}</strong></td>
+          <td>${row.dt}</td>
+          <td><strong>${row.name}</strong></td>
+          <td><strong>${row.phone}</strong></td>
+          <td><span class="badge ${row.src.includes('7번') ? 'badge-src7' : 'badge-src6'}">${row.src}</span></td>
+          <td><span class="badge ${row.isOk ? 'badge-ok' : 'badge-wait'}">${row.status}</span></td>
+          <td><button type="button" class="resend-btn" onclick="resendSms('${row.name}', '${row.rawPhone}')">📩 문자 재발송</button></td>
+        </tr>
+      `).join('');
     }
 
     async function loadLeads() {
@@ -282,7 +331,7 @@
         const list = Object.values(data.messageList || {});
         list.sort((a, b) => new Date(b.dateCreated) - new Date(a.dateCreated));
 
-        currentLeads = list.map((item, idx) => {
+        allLeads = list.map((item, idx) => {
           const name = extractNameFromText(item.text);
           const phone = formatPhoneDisplay(item.to);
           const src = detectSource(item.text);
@@ -300,26 +349,7 @@
           };
         });
 
-        document.getElementById('statTotal').textContent = currentLeads.length + ' 건';
-        document.getElementById('statAd7').textContent = currentLeads.filter(x => x.src.includes('7번')).length + ' 건';
-        document.getElementById('statAd6').textContent = currentLeads.filter(x => x.src.includes('6번')).length + ' 건';
-
-        if (currentLeads.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 30px;">아직 접수된 내역이 없습니다.</td></tr>';
-          return;
-        }
-
-        tbody.innerHTML = currentLeads.map(row => `
-          <tr>
-            <td><strong>${row.no}</strong></td>
-            <td>${row.dt}</td>
-            <td><strong>${row.name}</strong></td>
-            <td><strong>${row.phone}</strong></td>
-            <td><span class="badge ${row.src.includes('7번') ? 'badge-src7' : 'badge-src6'}">${row.src}</span></td>
-            <td><span class="badge ${row.isOk ? 'badge-ok' : 'badge-wait'}">${row.status}</span></td>
-            <td><button type="button" class="resend-btn" onclick="resendSms('${row.name}', '${row.rawPhone}')">📩 문자 재발송</button></td>
-          </tr>
-        `).join('');
+        renderTable();
       } catch (e) {
         console.error(e);
         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#ef4444; padding: 30px;">데이터 로드 중 오류가 발생했습니다. 새로고침을 눌러주세요.</td></tr>';
