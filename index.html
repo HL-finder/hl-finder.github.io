@@ -48,18 +48,28 @@
       border-bottom: 3px solid #111827;
       padding-bottom: 14px;
     }
-    /* 3번째 이미지 문구 폰트 크기를 4번째 이미지('하루 7회 신호 : 7회 성공') 크기급으로 대폭 확대 */
+    /* 최상단 메인 헤드라인: 가운데 정렬 + 파트별 고대비 컬러 강조 */
     .hero-h2 {
       font-size: 2.75rem;
       font-weight: 900;
-      line-height: 1.28;
-      margin-bottom: 22px;
+      line-height: 1.32;
+      margin-bottom: 24px;
       letter-spacing: -0.035em;
       color: #111827;
+      text-align: center;
       word-break: keep-all;
+    }
+    .hero-Lead-1 {
+      color: #4338ca;
     }
     .blue-text {
       color: var(--primary);
+    }
+    .hero-lead-2 {
+      color: #e11d48;
+      background: linear-gradient(transparent 62%, #fef08a 62%);
+      padding: 0 6px;
+      border-radius: 4px;
     }
     .chart-figure {
       margin: 16px 0 10px;
@@ -672,13 +682,10 @@
 <body>
 
   <div class="container">
-    <!-- 1. Page Title -->
-    <h1 class="page-title">Ai차트 고점저점탐지기</h1>
-
-    <!-- 2. Hero Subheadline (4번째 이미지 타이틀 크기급으로 확대!) -->
+    <!-- 1. 최상단 메인 헤드라인 (가운데 정렬 + 색상 강조) -->
     <h2 class="hero-h2">
-      지나고 나면 보이는 <span class="blue-text">고점과 저점</span><br />
-      실시간으로 알 수 있다면?
+      <span class="hero-Lead-1">지나고 나면 보이는</span> <span class="blue-text">고점과 저점</span><br />
+      <span class="hero-lead-2">실시간으로 알 수 있다면?</span>
     </h2>
 
     <!-- 3. 고점저점탐지기 실제 적용 차트 + 기존 캡션 -->
