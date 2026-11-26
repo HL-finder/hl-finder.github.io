@@ -631,7 +631,7 @@
       .detail-link { font-size: 0.80rem; padding: 6px 10px; }
 
       /* 모바일 하단 고정바 2단 구성:
-         윗줄(1층): 좌측 [내일부터 월 98만원 / 유료 전환 예정] + 우측 [무료 셋팅까지 남은 시간 카운트다운]
+         윗줄(1층): 좌측 [내일부터 월 98만원 / 유료 전환 예정] + 우측 상단 빈공간에 [무료 셋팅까지 남은 시간 / 07:25:43:03 / 선착순 무료 셋팅 혜택 마감 주의] 3줄 배치
          아랫줄(2층): 하단 전체폭 [내 PC에 고점저점탐지기 무료 셋팅 받기] 메인 버튼 */
       .m-br { display: none; }
       .sticky-cta-bar { padding: 10px 12px 12px; }
@@ -640,37 +640,38 @@
         max-width: 100%;
         flex-wrap: wrap;
         row-gap: 9px;
-        column-gap: 10px;
+        column-gap: 8px;
         justify-content: space-between;
         align-items: center;
       }
       .price-coupon-box {
         order: 1;
-        min-width: 122px;
+        min-width: 118px;
         border-radius: 8px;
         flex-shrink: 0;
       }
-      .coupon-top { font-size: 0.70rem; padding: 3px 8px; }
-      .coupon-bottom { font-size: 0.84rem; padding: 5px 8px; }
+      .coupon-top { font-size: 0.70rem; padding: 4px 8px; }
+      .coupon-bottom { font-size: 0.84rem; padding: 6px 8px; }
       .countdown-area {
         order: 2;
-        flex: 1 1 auto;
+        flex: 0 1 auto;
         min-width: 0;
         gap: 2px;
         align-items: flex-end;
+        text-align: right;
       }
       .countdown-line {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-        align-items: baseline;
-        gap: 6px;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 1px;
       }
-      .countdown-label { font-size: 0.75rem; }
-      .countdown-timer { font-size: 1.12rem; }
+      .countdown-label { font-size: 0.72rem; line-height: 1.2; }
+      .countdown-timer { font-size: 1.14rem; line-height: 1.15; }
       .countdown-sub {
         display: block;
-        font-size: 0.68rem;
+        font-size: 0.66rem;
+        line-height: 1.2;
       }
       .sticky-main-setup-btn {
         order: 3;
